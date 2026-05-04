@@ -165,13 +165,29 @@ class CjDropshippingService extends MedusaService({ CjVariant }) {
 
   // ---------- Catalog / inventory ----------
 
-  async searchProducts(query: string, page = 1, pageSize = 20): Promise<CjProductList> {
-    return this.request_<CjProductList>('GET', '/product/list', {
+  /**
+   * `countryCode` is optional. When omitted the full CJ catalog is returned;
+   * when provided, CJ filters to products that have inventory in that
+   * country's warehouse (ISO codes, e.g. 'CA', 'US', 'CN'). The configured
+   * default warehouse is no longer applied automatically — callers decide
+   * per request, since CA-warehoused inventory is sparse and most admin
+   * browsing wants the full catalog.
+   */
+  async searchProducts(
+    query: string,
+    page = 1,
+    pageSize = 20,
+    countryCode?: string
+  ): Promise<CjProductList> {
+    const params: Record<string, unknown> = {
       productNameEn: query,
       pageNum: page,
       pageSize,
-      countryCode: this.options_.warehouseCode,
-    })
+    }
+    if (countryCode) {
+      params.countryCode = countryCode
+    }
+    return this.request_<CjProductList>('GET', '/product/list', params)
   }
 
   async getProduct(pid: string): Promise<CjProductDetail> {

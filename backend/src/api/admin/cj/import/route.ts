@@ -2,6 +2,7 @@ import { MedusaRequest, MedusaResponse } from '@medusajs/framework'
 import { ContainerRegistrationKeys, MedusaError, Modules } from '@medusajs/framework/utils'
 import { createProductsWorkflow } from '@medusajs/medusa/core-flows'
 import { CJ_DROPSHIPPING_MODULE } from '../../../../modules/cj-dropshipping'
+import { CJ_WAREHOUSE_CODE } from '../../../../lib/constants'
 import type CjDropshippingService from '../../../../modules/cj-dropshipping/service'
 
 type ImportRequest = {
@@ -11,6 +12,10 @@ type ImportRequest = {
   title?: string
   handle?: string
   currency_code?: string
+  // Warehouse the imported variants will ship from. Defaults to the
+  // CJ_WAREHOUSE_CODE env var, which itself defaults to 'CA'. Admin
+  // chooses based on the breakdown shown by /admin/cj/preview.
+  warehouse_code?: string
 }
 
 /**
@@ -32,10 +37,12 @@ function slugify(s: string): string {
 }
 
 export async function POST(req: MedusaRequest<ImportRequest>, res: MedusaResponse): Promise<void> {
-  const { pid, markup, title, handle, currency_code = 'cad' } = req.body
+  const { pid, markup, title, handle, currency_code = 'cad', warehouse_code } = req.body
   if (!pid || typeof markup !== 'number' || markup <= 0) {
     throw new MedusaError(MedusaError.Types.INVALID_DATA, 'pid and markup (>0) are required')
   }
+
+  const resolvedWarehouseCode = (warehouse_code ?? CJ_WAREHOUSE_CODE).toUpperCase()
 
   const cj = req.scope.resolve<CjDropshippingService>(CJ_DROPSHIPPING_MODULE)
   const link = req.scope.resolve(ContainerRegistrationKeys.LINK)
@@ -107,7 +114,7 @@ export async function POST(req: MedusaRequest<ImportRequest>, res: MedusaRespons
     created.map((c) => ({
       cj_vid: c.cj.cj_vid,
       cj_pid: pid,
-      warehouse_code: 'CA',
+      warehouse_code: resolvedWarehouseCode,
       cost_price: Math.round(c.cj.cost * 100),
     }))
   )
@@ -124,6 +131,7 @@ export async function POST(req: MedusaRequest<ImportRequest>, res: MedusaRespons
   res.json({
     product_id: createdProduct.id,
     handle: createdProduct.handle,
+    warehouse_code: resolvedWarehouseCode,
     variants: created.map((c, i) => ({
       medusa_variant_id: c.medusa_variant_id,
       cj_variant_id: cjVariantsArray[i].id,
