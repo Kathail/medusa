@@ -91,6 +91,20 @@ export const MEILISEARCH_HOST = process.env.MEILISEARCH_HOST;
 export const MEILISEARCH_ADMIN_KEY = process.env.MEILISEARCH_ADMIN_KEY;
 
 /**
+ * (optional) CJ Dropshipping integration
+ *
+ * CJ_API_KEY is the long-lived API key issued in the CJ developer portal.
+ * The service exchanges it for short-lived access/refresh tokens at runtime.
+ * CJ_WAREHOUSE_CODE filters catalog/stock queries to a specific warehouse —
+ * defaults to CA so we only surface Canadian-warehoused SKUs.
+ * CJ_WEBHOOK_SECRET is the shared secret CJ uses to sign shipment webhook
+ * payloads; required only when the shipment webhook is enabled.
+ */
+export const CJ_API_KEY = process.env.CJ_API_KEY;
+export const CJ_WAREHOUSE_CODE = process.env.CJ_WAREHOUSE_CODE || 'CA';
+export const CJ_WEBHOOK_SECRET = process.env.CJ_WEBHOOK_SECRET;
+
+/**
  * Worker mode
  */
 export const WORKER_MODE =

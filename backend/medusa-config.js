@@ -21,7 +21,10 @@ import {
   MINIO_SECRET_KEY,
   MINIO_BUCKET,
   MEILISEARCH_HOST,
-  MEILISEARCH_ADMIN_KEY
+  MEILISEARCH_ADMIN_KEY,
+  CJ_API_KEY,
+  CJ_WAREHOUSE_CODE,
+  CJ_WEBHOOK_SECRET
 } from 'lib/constants';
 
 loadEnv(process.env.NODE_ENV, process.cwd());
@@ -131,6 +134,14 @@ const medusaConfig = {
             },
           },
         ],
+      },
+    }] : []),
+    ...(CJ_API_KEY ? [{
+      resolve: './src/modules/cj-dropshipping',
+      options: {
+        apiKey: CJ_API_KEY,
+        warehouseCode: CJ_WAREHOUSE_CODE,
+        webhookSecret: CJ_WEBHOOK_SECRET,
       },
     }] : [])
   ],
