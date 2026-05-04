@@ -108,7 +108,7 @@ export async function POST(req: MedusaRequest<ImportRequest>, res: MedusaRespons
       cj_vid: c.cj.cj_vid,
       cj_pid: pid,
       warehouse_code: 'CA',
-      cost_price: c.cj.cost,
+      cost_price: Math.round(c.cj.cost * 100),
     }))
   )
 
